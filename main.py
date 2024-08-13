@@ -9,8 +9,8 @@ load_dotenv(".env")
 AlphaVantage_API = os.environ.get("AV_API")
 account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-my_email = os.environ.get("MAIL_ADD")
-mail_pw = os.environ.get("MAIL_PW")
+my_email = "send@mail.com"
+mail_pw = "super_secret_password"
 
 # Select the company and stock you wish to follow
 STOCK_NAME = "NVDA" #AAPL, TSLA, GOOG
@@ -33,8 +33,8 @@ stock_data = stock_response.json()
 
 
 # Get yesterday's closing stock price.
-yesterday = str(date.today() - timedelta(days=1))
-day_before = str(date.today() - timedelta(days=2))
+yesterday = str(date.today() - timedelta(days=4)) #//TODO - return to original
+day_before = str(date.today() - timedelta(days=5))
 
 y_close_price = float(stock_data["Time Series (Daily)"][yesterday]["4. close"])
 
@@ -74,16 +74,22 @@ for n in range(3):
     news_desc = news_data["articles"][n]["description"]
     news_dictionary[news_headline] = news_desc
 
-
+with open("stock_news.txt", "a+") as file:
+    file.truncate(0)
+    for key, value in news_dictionary.items():
+        file.write("%s: %s\n" % (key, value))
+    file.seek(0)
+    content = file.read()
+    
+    
 # Option 1: Use twilio.com/docs/sms/quickstart/python to send a separate message with each article's title 
 # and description to your phone number. 
-
 # Option 2: Use SMTP to recieve news via email
 
 
 # Create a new list of the first 3 article's headline and description using list comprehension.
 # Send each article as a separate message via Twilio. 
-if percentage_diff > 1:
+if percentage_diff > 1: # Choose percentage change to trigger notifications
     if y_close_price > db_close_price:
         trend = "⬆️"
     else:
@@ -99,6 +105,12 @@ if percentage_diff > 1:
     ## from_ - Twilio number, to - Phone number you wish to recieve the notifications to
     
     # Option 2: Email
+    to_addrs = "your@mail.com"
+    
     with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
         connection.starttls()
         connection.login(user=my_email, password=mail_pw)
+        
+        connection.sendmail(from_addr=my_email, 
+                            to_addrs=to_addrs, 
+                             msg=f"To:{to_addrs}\nSubject:{STOCK_NAME} {trend} {percentage_diff}\n\n{content}".encode('utf-8'))
