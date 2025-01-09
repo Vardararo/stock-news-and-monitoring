@@ -14,7 +14,7 @@ load_dotenv(".env")
 AlphaVantage_API = os.environ.get("AV_API")
 account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-MY_EMAIL = "send@mail.com"
+MY_EMAIL = "send@gmail.com"
 MAIL_PW = "super_secret_password"
 
 # Select the company and stock you wish to follow
@@ -29,7 +29,7 @@ NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 stock_params = {
     "function": "TIME_SERIES_DAILY",
     "symbol": STOCK_NAME,
-    "apikey": AlphaVantage_API
+    "apikey": AlphaVantage_API,
 }
 
 stock_response = requests.get(STOCK_ENDPOINT, params=stock_params, timeout=10)
@@ -92,8 +92,8 @@ with open("stock_news.txt", "a+", encoding="utf-8") as file:
     content = file.read()
 
 
-# Option 1: Use twilio.com/docs/sms/quickstart/python to send a separate message with each article's title
-# and description to your phone number.
+# Option 1: Use twilio.com/docs/sms/quickstart/python to send a separate message with each
+# article's title and description to your phone number.
 # Option 2: Use SMTP to recieve news via email
 
 
@@ -109,8 +109,10 @@ if percentage_diff > 1:  # Choose percentage change to trigger notifications
     for key, value in news_dictionary.items():
         client = Client(account_sid, auth_token)
         message = client.messages \
-            .create(body=f"{STOCK_NAME}: {TREND}{percentage_diff}%\nHeadline: {key}\nBrief: {value}",
-                    from_='+11111111', to='+99999999')
+            .create(
+                body=f"{STOCK_NAME}: {TREND}{percentage_diff}%\nHeadline: {key}\nBrief: {value}",
+                    from_='+11111111', to='+99999999'
+                    )
         print(message.status)
 
     # from_ - Twilio number, to - Phone number you wish to recieve the notifications to
